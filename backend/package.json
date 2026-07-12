@@ -4,7 +4,7 @@
   "description": "AssetFlow backend — NestJS + Prisma + PostgreSQL",
   "private": true,
   "scripts": {
-    "build": "npx @nestjs/cli build",
+    "build": "tsc",
     "start": "nest start",
     "dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
