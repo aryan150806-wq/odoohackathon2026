@@ -26,6 +26,11 @@ export class BookingsController {
     return this.bookingsService.create(dto, userId);
   }
 
+  @Get()
+  async findAll() {
+    return this.bookingsService.findAll();
+  }
+
   @Get('resources')
   async getBookableResources() {
     return this.bookingsService.getBookableResources();

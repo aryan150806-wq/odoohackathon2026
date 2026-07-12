@@ -56,17 +56,17 @@ export function Dashboard() {
         </Card>
 
         <Card title="Recent Activity">
-          <div className="flex-col gap-4">
+          <div className="flex-col" style={{ gap: '1rem', display: 'flex' }}>
             {[1, 2, 3].map((i) => (
-              <div key={i} className="flex gap-3 items-center p-3 rounded-lg hover:bg-surface-hover transition-fast">
-                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+              <div key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', padding: '0.75rem', borderRadius: 'var(--radius-lg)', transition: 'var(--transition-fast)' }} onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--bg-surface-hover)'} onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+                <div className="bento-icon" style={{ borderRadius: '50%' }}>
                   <ArrowRightLeft size={18} />
                 </div>
                 <div>
-                  <div className="text-sm font-medium">Asset Allocated</div>
-                  <div className="text-xs text-secondary">Laptop AF-0220 assigned to Raj Kumar by Admin</div>
+                  <div style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--fw-medium)' }}>Asset Allocated</div>
+                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>Laptop AF-0220 assigned to Raj Kumar by Admin</div>
                 </div>
-                <div className="ml-auto text-xs text-tertiary">2h ago</div>
+                <div style={{ marginLeft: 'auto', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>2h ago</div>
               </div>
             ))}
           </div>

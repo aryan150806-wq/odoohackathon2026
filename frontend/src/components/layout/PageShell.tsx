@@ -13,6 +13,12 @@ export function PageShell() {
 
   return (
     <div className="app-layout">
+      {/* Ambient background glow */}
+      <div className="ambient-glow-container">
+        <div className="ambient-glow-1"></div>
+        <div className="ambient-glow-2"></div>
+      </div>
+
       <Sidebar 
         collapsed={sidebarCollapsed} 
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 

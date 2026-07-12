@@ -8,6 +8,7 @@ import { Calendar as CalendarIcon, Clock, Plus, Filter, AlertCircle } from 'luci
 import { apiClient } from '../api/client';
 
 export function Bookings() {
+  const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [showOverlap, setShowOverlap] = useState(false);
   const [overlapMsg, setOverlapMsg] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -59,6 +60,12 @@ export function Bookings() {
     createBooking.mutate(newBooking);
   };
 
+  const filteredBookings = bookings?.filter((b: any) => 
+    !filterCategory || b.asset?.category?.name === filterCategory
+  );
+
+  const categories = Array.from(new Set(bookings?.map((b: any) => b.asset?.category?.name).filter(Boolean))) as string[];
+
   return (
     <div>
       <div className="page-header">
@@ -86,18 +93,28 @@ export function Bookings() {
         <Card className="col-span-1">
           <div className="p-4 border-b border-border font-medium">Quick Filter</div>
           <div className="p-2 flex-col gap-1">
-            <button className="flex justify-between items-center w-full p-2 text-sm hover:bg-surface-hover rounded-md text-left">
+            <button 
+              onClick={() => setFilterCategory(null)}
+              className={`flex justify-between items-center w-full p-2 text-sm hover:bg-surface-hover rounded-md text-left ${!filterCategory ? 'bg-primary-50 text-primary-700' : ''}`}
+            >
               <span>All Resources</span>
-              <Badge>12</Badge>
+              <Badge variant={!filterCategory ? 'purple' : 'default'}>{bookings?.length || 0}</Badge>
             </button>
-            <button className="flex justify-between items-center w-full p-2 text-sm hover:bg-surface-hover rounded-md text-left bg-primary-50 text-primary-700">
-              <span>Conference Rooms</span>
-              <Badge variant="purple">4</Badge>
-            </button>
-            <button className="flex justify-between items-center w-full p-2 text-sm hover:bg-surface-hover rounded-md text-left">
-              <span>AV Equipment</span>
-              <Badge>8</Badge>
-            </button>
+            
+            {categories.map(cat => {
+              const count = bookings?.filter((b: any) => b.asset?.category?.name === cat).length;
+              const isActive = filterCategory === cat;
+              return (
+                <button 
+                  key={cat}
+                  onClick={() => setFilterCategory(cat)}
+                  className={`flex justify-between items-center w-full p-2 text-sm hover:bg-surface-hover rounded-md text-left ${isActive ? 'bg-primary-50 text-primary-700' : ''}`}
+                >
+                  <span>{cat}</span>
+                  <Badge variant={isActive ? 'purple' : 'default'}>{count}</Badge>
+                </button>
+              );
+            })}
           </div>
         </Card>
 
@@ -127,10 +144,10 @@ export function Bookings() {
               <tbody>
                 {isLoading ? (
                   <tr><td colSpan={5} className="text-center py-8 text-secondary">Loading bookings...</td></tr>
-                ) : bookings?.length === 0 ? (
+                ) : filteredBookings?.length === 0 ? (
                   <tr><td colSpan={5} className="text-center py-8 text-secondary">No active bookings.</td></tr>
                 ) : (
-                  bookings?.map((booking: any) => (
+                  filteredBookings?.map((booking: any) => (
                     <tr key={booking.id}>
                       <td className="font-medium">{booking.asset?.name || booking.assetId}</td>
                       <td>{booking.user?.name || booking.userId}</td>

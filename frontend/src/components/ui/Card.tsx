@@ -31,14 +31,25 @@ interface KPICardProps {
 }
 
 export function KPICard({ title, value, icon: Icon, colorClass }: KPICardProps) {
+  // Wibify bento card style using vanilla CSS classes defined in index.css
   return (
-    <div className="kpi-card">
-      <div className={`kpi-icon ${colorClass}`}>
-        <Icon size={24} />
+    <div className="card bento-card">
+      <div className="bento-card-top">
+        <div className="bento-icon">
+          <Icon size={20} />
+        </div>
+        <div className="bento-number">
+          {/* Static index could go here if needed, e.g. 01 */}
+        </div>
       </div>
+      
       <div>
-        <div className="kpi-value">{value}</div>
-        <div className="kpi-label">{title}</div>
+        <div className="bento-value">{value}</div>
+        <div className="bento-label">{title}</div>
+      </div>
+
+      <div className="bento-arrow">
+        →
       </div>
     </div>
   );

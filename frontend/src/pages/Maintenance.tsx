@@ -3,20 +3,30 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
-import { Wrench, Plus, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
-
-const MOCK_TICKETS = {
-  PENDING: [],
-  APPROVED: [],
-  TECHNICIAN_ASSIGNED: [],
-  IN_PROGRESS: [],
-  RESOLVED: []
-};
+import { Plus, Clock, CheckCircle2 } from 'lucide-react';
 
 export function Maintenance() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newRequest, setNewRequest] = useState({ assetId: '', description: '', priority: 'MEDIUM' });
   const queryClient = useQueryClient();
+
+  const { data: ticketsResponse, isLoading } = useQuery({
+    queryKey: ['maintenance'],
+    queryFn: async () => {
+      const res = await apiClient.get('/maintenance');
+      return res.data;
+    }
+  });
+
+  const tickets = Array.isArray(ticketsResponse?.data) ? ticketsResponse.data : (Array.isArray(ticketsResponse) ? ticketsResponse : []);
+
+  const groupedTickets = {
+    PENDING: tickets.filter((t: any) => t.status === 'PENDING'),
+    APPROVED: tickets.filter((t: any) => t.status === 'APPROVED'),
+    TECHNICIAN_ASSIGNED: tickets.filter((t: any) => t.status === 'TECHNICIAN_ASSIGNED'),
+    IN_PROGRESS: tickets.filter((t: any) => t.status === 'IN_PROGRESS'),
+    RESOLVED: tickets.filter((t: any) => t.status === 'RESOLVED'),
+  };
 
   const createRequest = useMutation({
     mutationFn: async (data: any) => {
@@ -52,22 +62,24 @@ export function Maintenance() {
       </div>
 
       <div className="kanban-board flex-1 flex gap-4 overflow-x-auto pb-4">
+        {isLoading && <div className="p-4 text-secondary">Loading tickets...</div>}
+        
         {/* PENDING COLUMN */}
         <div className="kanban-column flex-1 min-w-[280px]">
           <div className="kanban-header flex justify-between items-center mb-3">
             <h3 className="font-semibold text-sm uppercase text-secondary">Pending</h3>
-            <Badge>{MOCK_TICKETS.PENDING.length}</Badge>
+            <Badge>{groupedTickets.PENDING.length}</Badge>
           </div>
           <div className="flex flex-col gap-3">
-            {MOCK_TICKETS.PENDING.map(t => (
+            {groupedTickets.PENDING.map((t: any) => (
               <Card key={t.id} className="p-3 cursor-grab hover:shadow-md transition-shadow border-l-4 border-warning-400">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-bold text-tertiary">{t.asset}</span>
-                  <Badge variant={t.priority === 'HIGH' ? 'danger' : 'warning'}>{t.priority}</Badge>
+                  <span className="text-xs font-bold text-tertiary">{t.asset?.name || t.assetId}</span>
+                  <Badge variant={t.priority === 'HIGH' || t.priority === 'CRITICAL' ? 'danger' : 'warning'}>{t.priority}</Badge>
                 </div>
-                <div className="font-medium text-sm mb-3">{t.title}</div>
+                <div className="font-medium text-sm mb-3">{t.description}</div>
                 <div className="flex justify-between items-center text-xs text-secondary">
-                  <span className="flex items-center"><Clock size={12} className="mr-1"/> {t.date}</span>
+                  <span className="flex items-center"><Clock size={12} className="mr-1"/> {new Date(t.createdAt).toLocaleDateString()}</span>
                 </div>
               </Card>
             ))}
@@ -78,10 +90,22 @@ export function Maintenance() {
         <div className="kanban-column flex-1 min-w-[280px]">
           <div className="kanban-header flex justify-between items-center mb-3">
             <h3 className="font-semibold text-sm uppercase text-secondary">Approved</h3>
-            <Badge>{MOCK_TICKETS.APPROVED.length}</Badge>
+            <Badge>{groupedTickets.APPROVED.length}</Badge>
           </div>
           <div className="flex flex-col gap-3">
-            {MOCK_TICKETS.APPROVED.length === 0 && (
+            {groupedTickets.APPROVED.map((t: any) => (
+              <Card key={t.id} className="p-3 cursor-grab hover:shadow-md transition-shadow border-l-4 border-info-400">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-xs font-bold text-tertiary">{t.asset?.name || t.assetId}</span>
+                  <Badge variant="info">{t.priority}</Badge>
+                </div>
+                <div className="font-medium text-sm mb-3">{t.description}</div>
+                <div className="flex justify-between items-center text-xs text-secondary">
+                  <span className="flex items-center"><Clock size={12} className="mr-1"/> {new Date(t.createdAt).toLocaleDateString()}</span>
+                </div>
+              </Card>
+            ))}
+            {groupedTickets.APPROVED.length === 0 && (
               <div className="text-center p-4 border border-dashed border-border rounded-lg text-tertiary text-sm">
                 No tickets in this stage
               </div>
@@ -93,18 +117,18 @@ export function Maintenance() {
         <div className="kanban-column flex-1 min-w-[280px]">
           <div className="kanban-header flex justify-between items-center mb-3">
             <h3 className="font-semibold text-sm uppercase text-secondary">Tech Assigned</h3>
-            <Badge>{MOCK_TICKETS.TECHNICIAN_ASSIGNED.length}</Badge>
+            <Badge>{groupedTickets.TECHNICIAN_ASSIGNED.length}</Badge>
           </div>
           <div className="flex flex-col gap-3">
-            {MOCK_TICKETS.TECHNICIAN_ASSIGNED.map(t => (
+            {groupedTickets.TECHNICIAN_ASSIGNED.map((t: any) => (
               <Card key={t.id} className="p-3 cursor-grab hover:shadow-md transition-shadow border-l-4 border-info-400">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-bold text-tertiary">{t.asset}</span>
+                  <span className="text-xs font-bold text-tertiary">{t.asset?.name || t.assetId}</span>
                   <Badge variant="info">{t.priority}</Badge>
                 </div>
-                <div className="font-medium text-sm mb-3">{t.title}</div>
+                <div className="font-medium text-sm mb-3">{t.description}</div>
                 <div className="flex justify-between items-center text-xs text-secondary">
-                  <span className="flex items-center text-primary-600 font-medium">{t.tech}</span>
+                  <span className="flex items-center text-primary-600 font-medium">{t.technician?.name || 'Assigned'}</span>
                 </div>
               </Card>
             ))}
@@ -115,18 +139,18 @@ export function Maintenance() {
         <div className="kanban-column flex-1 min-w-[280px]">
           <div className="kanban-header flex justify-between items-center mb-3">
             <h3 className="font-semibold text-sm uppercase text-secondary">In Progress</h3>
-            <Badge>{MOCK_TICKETS.IN_PROGRESS.length}</Badge>
+            <Badge>{groupedTickets.IN_PROGRESS.length}</Badge>
           </div>
           <div className="flex flex-col gap-3">
-            {MOCK_TICKETS.IN_PROGRESS.map(t => (
+            {groupedTickets.IN_PROGRESS.map((t: any) => (
               <Card key={t.id} className="p-3 cursor-grab hover:shadow-md transition-shadow border-l-4 border-primary-400">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-bold text-tertiary">{t.asset}</span>
+                  <span className="text-xs font-bold text-tertiary">{t.asset?.name || t.assetId}</span>
                   <Badge variant="default">{t.priority}</Badge>
                 </div>
-                <div className="font-medium text-sm mb-3">{t.title}</div>
+                <div className="font-medium text-sm mb-3">{t.description}</div>
                 <div className="flex justify-between items-center text-xs text-secondary">
-                  <span className="flex items-center text-primary-600 font-medium">{t.tech}</span>
+                  <span className="flex items-center text-primary-600 font-medium">{t.technician?.name || 'Assigned'}</span>
                 </div>
               </Card>
             ))}
@@ -137,18 +161,18 @@ export function Maintenance() {
         <div className="kanban-column flex-1 min-w-[280px]">
           <div className="kanban-header flex justify-between items-center mb-3">
             <h3 className="font-semibold text-sm uppercase text-secondary">Resolved</h3>
-            <Badge variant="success">{MOCK_TICKETS.RESOLVED.length}</Badge>
+            <Badge variant="success">{groupedTickets.RESOLVED.length}</Badge>
           </div>
           <div className="flex flex-col gap-3">
-            {MOCK_TICKETS.RESOLVED.map(t => (
+            {groupedTickets.RESOLVED.map((t: any) => (
               <Card key={t.id} className="p-3 opacity-60 border-l-4 border-success-400">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-bold text-tertiary">{t.asset}</span>
+                  <span className="text-xs font-bold text-tertiary">{t.asset?.name || t.assetId}</span>
                   <CheckCircle2 size={16} className="text-success-600" />
                 </div>
-                <div className="font-medium text-sm mb-3 line-through text-secondary">{t.title}</div>
+                <div className="font-medium text-sm mb-3 line-through text-secondary">{t.description}</div>
                 <div className="flex justify-between items-center text-xs text-secondary">
-                  <span>{t.date}</span>
+                  <span>{new Date(t.updatedAt || t.createdAt).toLocaleDateString()}</span>
                 </div>
               </Card>
             ))}

@@ -156,6 +156,19 @@ export class BookingsService {
   }
 
   /**
+   * Get all bookings (admin view)
+   */
+  async findAll() {
+    return this.prisma.booking.findMany({
+      include: {
+        asset: { select: { id: true, assetTag: true, name: true, category: { select: { name: true } } } },
+        user: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: { startTime: 'desc' },
+    });
+  }
+
+  /**
    * Get bookings for a resource's calendar view.
    */
   async getCalendar(assetId: string, startDate?: string, endDate?: string) {
