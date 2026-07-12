@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
 export const apiClient = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: API_BASE_URL,
   withCredentials: true, // For httpOnly cookies (refresh token)
 });
 
@@ -29,7 +31,7 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       try {
         // Attempt to refresh token using httpOnly cookie
-        const { data } = await axios.post('http://localhost:3000/api/auth/refresh', {}, { withCredentials: true });
+        const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, {}, { withCredentials: true });
         
         // Update store with new token
         useAuthStore.getState().setAuth(data.user, data.accessToken);
