@@ -1,9 +1,9 @@
-services:
+databases:
   # PostgreSQL Database
-  - type: pgo
-    name: assetflow-db
+  - name: assetflow-db
     plan: free
 
+services:
   # NestJS Backend Web Service
   - type: web
     name: assetflow-backend
